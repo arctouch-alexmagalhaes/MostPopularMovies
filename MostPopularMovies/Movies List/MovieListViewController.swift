@@ -9,7 +9,7 @@
 import UIKit
 
 protocol MovieListViewProtocol: class {
-
+    func dataIsReady()
 }
 
 class MovieListViewController: UIViewController {
@@ -18,6 +18,11 @@ class MovieListViewController: UIViewController {
     private let movieDetailsSegueIdentifier = "movieDetailsSegue"
     private lazy var presenter: MovieListPresenterProtocol = MovieListPresenter(view: self)
     private var selectedIndexPath: IndexPath?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        presenter.viewDidLoad()
+    }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard segue.identifier == movieDetailsSegueIdentifier,
@@ -30,7 +35,9 @@ class MovieListViewController: UIViewController {
 }
 
 extension MovieListViewController: MovieListViewProtocol {
-    
+    func dataIsReady() {
+        tableView.reloadData()
+    }
 }
 
 extension MovieListViewController: UITableViewDataSource {
@@ -44,7 +51,7 @@ extension MovieListViewController: UITableViewDataSource {
         }
 
         let movieData = presenter.movie(at: indexPath)
-        movieCell.textLabel?.text = movieData.title
+        movieCell.textLabel?.text = movieData?.title
         return movieCell
     }
 }

@@ -9,9 +9,9 @@
 import Foundation
 
 struct MovieCellViewData {
-    let thumbnailURL: String
-    let title: String
-    let genres: [String]
-    let popularityScore: Double
-    let releaseYear: String
+    let thumbnailURL: String?
+    let title: String?
+    let genres: [String]?
+    let popularityScore: Double?
+    let releaseYear: String?
 }
