@@ -14,10 +14,11 @@ enum MoviesServiceError: Error {
 
 protocol MoviesServiceProtocol {
     func requestMovies(page: Int, completion: @escaping (([AnyHashable: Any]?, Error?) -> Void))
+    func requestMovieThumbnail(_ url: String?, completion: ((Data?) -> Void)?)
 }
 
 class MoviesService {
-    
+    private let thumbnailWidth: Int = 92
 }
 
 extension MoviesService: MoviesServiceProtocol {
@@ -44,6 +45,24 @@ extension MoviesService: MoviesServiceProtocol {
                 completion(data as? [AnyHashable: Any], nil)
             case .failure(let error):
                 completion(nil, error)
+            }
+        }
+    }
+
+    func requestMovieThumbnail(_ url: String?, completion: ((Data?) -> Void)?) {
+        guard let relativeURL = url else {
+            completion?(nil)
+            return
+        }
+
+        let thumbnailURL = ServiceConstants.thumbnailImageURL(relativeURL: relativeURL, desiredWidth: thumbnailWidth)
+        Alamofire.request(thumbnailURL).validate().responseData { response in
+            switch response.result {
+            case .success(let value):
+                completion?(value)
+            case .failure:
+                // TODO error handling
+                completion?(nil)
             }
         }
     }

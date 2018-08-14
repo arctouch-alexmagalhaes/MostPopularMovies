@@ -18,6 +18,7 @@ protocol MoviesRepositoryProtocol: class {
 
     func movie(at index: Int) -> Movie
     func loadMovies()
+    func loadMovieThumbnail(_ url: String?, completion: ((Data?) -> Void)?)
 }
 
 class MoviesRepository {
@@ -152,5 +153,9 @@ extension MoviesRepository: MoviesRepositoryProtocol {
                 strongSelf.delegate?.moviesRepositoryDidUpdateListOfMovies(strongSelf)
             }
         }
+    }
+
+    func loadMovieThumbnail(_ url: String?, completion: ((Data?) -> Void)?) {
+        moviesService.requestMovieThumbnail(url, completion: completion)
     }
 }

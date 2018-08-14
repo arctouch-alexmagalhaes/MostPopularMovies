@@ -7,12 +7,14 @@
 //
 
 import Foundation
+import UIKit
 
 protocol MovieListPresenterProtocol {
     var numberOfMovies: Int { get }
 
     func viewDidLoad()
     func movie(at indexPath: IndexPath) -> MovieCellViewData?
+    func movieThumbnail(_ url: String?, completion: ((UIImage?) -> Void)?)
 }
 
 class MovieListPresenter {
@@ -38,15 +40,27 @@ extension MovieListPresenter: MovieListPresenterProtocol {
         guard indexPath.row < repository.numberOfMovies else { return nil }
         let movie = repository.movie(at: indexPath.row)
 
+        let genre = movie.genres?.joined(separator: ", ")
+
         var releaseYear: String?
         if let releaseDate = movie.releaseDate {
             releaseYear = String(Calendar.current.component(.year, from: releaseDate))
         }
         return MovieCellViewData(thumbnailURL: movie.posterImagePath,
                                  title: movie.title,
-                                 genres: movie.genres,
+                                 genres: genre,
                                  popularityScore: movie.popularity,
                                  releaseYear: releaseYear)
+    }
+
+    func movieThumbnail(_ url: String?, completion: ((UIImage?) -> Void)?) {
+        repository.loadMovieThumbnail(url) { data in
+            guard let data = data else {
+                completion?(nil)
+                return
+            }
+            completion?(UIImage(data: data))
+        }
     }
 }
 

@@ -15,4 +15,8 @@ enum ServiceConstants {
     static let apiKey = "8badbf7ae17577baae23966eefdd29f8"
     static let moviesURL = "\(baseURL)/movie/popular"
     static let genresURL = "\(baseURL)/genre/movie/list"
+
+    static func thumbnailImageURL(relativeURL: String, desiredWidth: Int) -> String {
+        return "\(baseImageURL)/w\(desiredWidth)\(relativeURL)"
+    }
 }

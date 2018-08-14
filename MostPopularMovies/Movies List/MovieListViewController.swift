@@ -14,6 +14,7 @@ protocol MovieListViewProtocol: class {
 
 class MovieListViewController: UIViewController {
     @IBOutlet private weak var tableView: UITableView!
+    private let movieCellHeight: CGFloat = 140
     private let movieCellIdentifier = "movieCellIdentifier"
     private let movieDetailsSegueIdentifier = "movieDetailsSegue"
     private lazy var presenter: MovieListPresenterProtocol = MovieListPresenter(view: self)
@@ -21,6 +22,7 @@ class MovieListViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.rowHeight = movieCellHeight
         presenter.viewDidLoad()
     }
 
@@ -46,12 +48,16 @@ extension MovieListViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let movieCell = tableView.dequeueReusableCell(withIdentifier: movieCellIdentifier) else {
+        guard let movieCell = tableView.dequeueReusableCell(withIdentifier: movieCellIdentifier) as? MovieCell else {
             return UITableViewCell()
         }
 
-        let movieData = presenter.movie(at: indexPath)
-        movieCell.textLabel?.text = movieData?.title
+        if let movieViewData = presenter.movie(at: indexPath) {
+            movieCell.configureContents(movieViewData)
+            presenter.movieThumbnail(movieViewData.thumbnailURL) { image in
+                movieCell.configureThumbnail(image, url: movieViewData.thumbnailURL)
+            }
+        }
         return movieCell
     }
 }
@@ -60,5 +66,6 @@ extension MovieListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         selectedIndexPath = indexPath
         performSegue(withIdentifier: movieDetailsSegueIdentifier, sender: self)
+        tableView.deselectRow(at: indexPath, animated: false)
     }
 }
