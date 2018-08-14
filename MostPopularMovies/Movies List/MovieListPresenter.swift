@@ -44,7 +44,7 @@ extension MovieListPresenter: MovieListPresenterProtocol {
 
         var releaseYear: String?
         if let releaseDate = movie.releaseDate {
-            releaseYear = String(Calendar.current.component(.year, from: releaseDate))
+            releaseYear = "(\(Calendar.current.component(.year, from: releaseDate)))"
         }
         return MovieCellViewData(thumbnailURL: movie.posterImagePath,
                                  title: movie.title,

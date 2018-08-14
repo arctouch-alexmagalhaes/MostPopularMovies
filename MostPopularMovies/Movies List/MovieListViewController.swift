@@ -19,10 +19,12 @@ class MovieListViewController: UIViewController {
     private let movieDetailsSegueIdentifier = "movieDetailsSegue"
     private lazy var presenter: MovieListPresenterProtocol = MovieListPresenter(view: self)
     private var selectedIndexPath: IndexPath?
+    private var highestPopularity: Double = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.rowHeight = movieCellHeight
+        tableView.tableFooterView = UIView()
         presenter.viewDidLoad()
     }
 
@@ -53,7 +55,13 @@ extension MovieListViewController: UITableViewDataSource {
         }
 
         if let movieViewData = presenter.movie(at: indexPath) {
-            movieCell.configureContents(movieViewData)
+            let popularityScore = movieViewData.popularityScore ?? 0.0
+            if indexPath.row == 0 {
+                highestPopularity = popularityScore
+            }
+            let popularityColor = popularityScore.popularityColor(highestPopularity: highestPopularity)
+
+            movieCell.configureContents(movieViewData, popularityColor: popularityColor)
             presenter.movieThumbnail(movieViewData.thumbnailURL) { image in
                 movieCell.configureThumbnail(image, url: movieViewData.thumbnailURL)
             }
@@ -66,6 +74,25 @@ extension MovieListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         selectedIndexPath = indexPath
         performSegue(withIdentifier: movieDetailsSegueIdentifier, sender: self)
-        tableView.deselectRow(at: indexPath, animated: false)
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+private extension Double {
+    private var highestPopularityGreenValue: CGFloat { return 205.0 }
+    private var highestPopularityBlueValue: CGFloat { return 0.0 }
+    private var lowestPopularityGreenValue: CGFloat { return 255.0 }
+    private var lowestPopularityBlueValue: CGFloat { return 255.0 }
+
+    func popularityColor(highestPopularity: Double) -> UIColor {
+        let ratio: CGFloat = CGFloat(self / highestPopularity)
+
+        let greenRange = highestPopularityGreenValue - lowestPopularityGreenValue
+        let green: CGFloat = ratio * greenRange + lowestPopularityGreenValue
+
+        let blueRange = highestPopularityBlueValue - lowestPopularityBlueValue
+        let blue: CGFloat = ratio * blueRange + lowestPopularityBlueValue
+
+        return UIColor(red: 1.0, green: green / 255.0, blue: blue / 255.0, alpha: 1.0)
     }
 }

@@ -18,7 +18,7 @@ protocol MoviesServiceProtocol {
 }
 
 class MoviesService {
-    private let thumbnailWidth: Int = 92
+    private let thumbnailWidth: Int = 154
 }
 
 extension MoviesService: MoviesServiceProtocol {

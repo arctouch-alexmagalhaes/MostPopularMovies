@@ -20,12 +20,23 @@ class MovieCell: UITableViewCell {
     @IBOutlet private weak var thumbnailImageView: UIImageView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var genreLabel: UILabel!
+    @IBOutlet private weak var popularityLabel: UILabel!
     @IBOutlet private weak var releaseYearLabel: UILabel!
     private var currentThumbnailURL: String?
 
-    func configureContents(_ cellViewData: MovieCellViewData) {
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        popularityLabel.layer.cornerRadius = popularityLabel.frame.size.height / 2.0
+        popularityLabel.layer.masksToBounds = true
+    }
+
+    func configureContents(_ cellViewData: MovieCellViewData, popularityColor: UIColor) {
         titleLabel.text = cellViewData.title
         genreLabel.text = cellViewData.genres
+        if let popularityScore = cellViewData.popularityScore {
+            popularityLabel.text = "\(Int(popularityScore))"
+            popularityLabel.backgroundColor = popularityColor
+        }
         releaseYearLabel.text = cellViewData.releaseYear
         currentThumbnailURL = cellViewData.thumbnailURL
     }
@@ -40,6 +51,8 @@ class MovieCell: UITableViewCell {
         thumbnailImageView.image = nil
         titleLabel.text = nil
         genreLabel.text = nil
+        popularityLabel.text = nil
+        popularityLabel.backgroundColor = .clear
         releaseYearLabel.text = nil
         currentThumbnailURL = nil
     }
