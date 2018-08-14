@@ -1,0 +1,6 @@
+framework module Pods_MostPopularMovies {
+  umbrella header "Pods-MostPopularMovies-umbrella.h"
+
+  export *
+  module * { export * }
+}
