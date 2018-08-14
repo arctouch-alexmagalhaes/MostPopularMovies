@@ -8,9 +8,16 @@
 
 import Foundation
 
-protocol MoviesRepositoryProtocol {
-    var loadedMovies: [Movie] { get }
-    func loadMoreMovies(completion: @escaping () -> Void)
+protocol MoviesRepositoryDelegate: class {
+    func moviesRepositoryDidUpdateListOfMovies(_ moviesRepository: MoviesRepositoryProtocol)
+}
+
+protocol MoviesRepositoryProtocol: class {
+    var delegate: MoviesRepositoryDelegate? { get set }
+    var numberOfMovies: Int { get }
+
+    func movie(at index: Int) -> Movie
+    func loadMovies()
 }
 
 class MoviesRepository {
@@ -18,11 +25,13 @@ class MoviesRepository {
 
     private let moviesService: MoviesServiceProtocol = MoviesService()
     private let genresService: GenresServiceProtocol = GenresService()
-    private(set) var loadedMovies: [Movie] = []
     private var totalNumberOfMovies: Int = 0
     private var totalNumberOfPages: Int = 0
     private var lastLoadedPage: Int = 0
+    private var loadedMovies: [Movie] = []
+    private var isLoadingMovies: Bool = false
     private var genres: [Genre]? = nil
+    weak var delegate: MoviesRepositoryDelegate?
 
     private func loadGenres(completion: @escaping () -> Void) {
         genresService.requestGenres { [weak self] (genresDictionary, error) in
@@ -104,22 +113,43 @@ class MoviesRepository {
 }
 
 extension MoviesRepository: MoviesRepositoryProtocol {
-    func loadMoreMovies(completion: @escaping () -> Void) {
+    var numberOfMovies: Int {
+        return loadedMovies.count
+    }
+
+    func movie(at index: Int) -> Movie {
+        if index + 10 > loadedMovies.count && index < totalNumberOfMovies {
+            loadMovies()
+        }
+
+        return loadedMovies[index]
+    }
+
+    func loadMovies() {
         guard genres != nil else {
             loadGenres { [weak self] in
-                self?.loadMoreMovies(completion: completion)
+                self?.loadMovies()
             }
             return
         }
 
-        moviesService.requestMovies(page: lastLoadedPage + 1) { [weak self] (moviesDictionary, error) in
+        let newPage = lastLoadedPage + 1
+        guard newPage <= totalNumberOfPages || totalNumberOfPages == 0 else {
+            return
+        }
+
+        guard !isLoadingMovies else { return }
+        isLoadingMovies = true
+        moviesService.requestMovies(page: newPage) { [weak self] (moviesDictionary, error) in
             if error != nil {
                 //TODO handle error
             }
 
             self?.parseMoviesDictionary(moviesDictionary)
-            DispatchQueue.main.async {
-                completion()
+            DispatchQueue.main.async { [weak self] in
+                guard let strongSelf = self else { return }
+                strongSelf.isLoadingMovies = false
+                strongSelf.delegate?.moviesRepositoryDidUpdateListOfMovies(strongSelf)
             }
         }
     }

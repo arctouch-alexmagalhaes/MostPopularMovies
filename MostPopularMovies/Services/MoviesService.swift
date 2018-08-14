@@ -38,7 +38,7 @@ extension MoviesService: MoviesServiceProtocol {
                                         parameters: parameters,
                                         encoding: URLEncoding.queryString,
                                         headers: headers)
-        request.validate().responseJSON(queue: DispatchQueue.global()) { response in
+        request.validate().responseJSON { response in
             switch response.result {
             case .success(let data):
                 completion(data as? [AnyHashable: Any], nil)

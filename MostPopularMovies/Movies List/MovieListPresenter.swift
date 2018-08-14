@@ -20,24 +20,23 @@ class MovieListPresenter {
     private let repository: MoviesRepositoryProtocol = MoviesRepository.shared
 
     var numberOfMovies: Int {
-        return repository.loadedMovies.count
+        return repository.numberOfMovies
     }
 
     init(view: MovieListViewProtocol) {
         self.view = view
+        repository.delegate = self
     }
 }
 
 extension MovieListPresenter: MovieListPresenterProtocol {
     func viewDidLoad() {
-        repository.loadMoreMovies { [weak self] in
-            self?.view?.dataIsReady()
-        }
+        repository.loadMovies()
     }
 
     func movie(at indexPath: IndexPath) -> MovieCellViewData? {
-        guard indexPath.row < repository.loadedMovies.count else { return nil }
-        let movie = repository.loadedMovies[indexPath.row]
+        guard indexPath.row < repository.numberOfMovies else { return nil }
+        let movie = repository.movie(at: indexPath.row)
 
         var releaseYear: String?
         if let releaseDate = movie.releaseDate {
@@ -48,5 +47,11 @@ extension MovieListPresenter: MovieListPresenterProtocol {
                                  genres: movie.genres,
                                  popularityScore: movie.popularity,
                                  releaseYear: releaseYear)
+    }
+}
+
+extension MovieListPresenter: MoviesRepositoryDelegate {
+    func moviesRepositoryDidUpdateListOfMovies(_ moviesRepository: MoviesRepositoryProtocol) {
+        view?.dataIsReady()
     }
 }
