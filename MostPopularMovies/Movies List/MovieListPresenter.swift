@@ -14,31 +14,34 @@ protocol MovieListPresenterProtocol {
 
     func viewDidLoad()
     func movie(at indexPath: IndexPath) -> MovieCellViewData?
-    func movieThumbnail(_ url: String?, completion: ((UIImage?) -> Void)?)
+    func movieThumbnail(_ url: String?, width: CGFloat, completion: ((UIImage?) -> Void)?)
 }
 
 class MovieListPresenter {
     private weak var view: MovieListViewProtocol?
-    private let repository: MoviesRepositoryProtocol = MoviesRepository.shared
+    private let moviesRepository: MoviesRepositoryProtocol = MoviesRepository.shared
+    private let imagesRepository: ImagesRepositoryProtocol = ImagesRepository.shared
 
     var numberOfMovies: Int {
-        return repository.numberOfMovies
+        return moviesRepository.numberOfMovies
     }
 
     init(view: MovieListViewProtocol) {
         self.view = view
-        repository.delegate = self
+        moviesRepository.delegate = self
     }
 }
 
 extension MovieListPresenter: MovieListPresenterProtocol {
     func viewDidLoad() {
-        repository.loadMovies()
+        imagesRepository.loadConfiguration { [weak self] in
+            self?.moviesRepository.loadMovies()
+        }
     }
 
     func movie(at indexPath: IndexPath) -> MovieCellViewData? {
-        guard indexPath.row < repository.numberOfMovies else { return nil }
-        let movie = repository.movie(at: indexPath.row)
+        guard indexPath.row < moviesRepository.numberOfMovies else { return nil }
+        let movie = moviesRepository.movie(at: indexPath.row)
 
         let genre = movie.genres?.joined(separator: ", ")
 
@@ -53,8 +56,8 @@ extension MovieListPresenter: MovieListPresenterProtocol {
                                  releaseYear: releaseYear)
     }
 
-    func movieThumbnail(_ url: String?, completion: ((UIImage?) -> Void)?) {
-        repository.loadMovieThumbnail(url) { data in
+    func movieThumbnail(_ url: String?, width: CGFloat, completion: ((UIImage?) -> Void)?) {
+        imagesRepository.loadPosterImage(url, width: Int(width)) { data in
             guard let data = data else {
                 completion?(nil)
                 return

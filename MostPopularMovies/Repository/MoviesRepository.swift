@@ -18,24 +18,25 @@ protocol MoviesRepositoryProtocol: class {
 
     func movie(at index: Int) -> Movie
     func loadMovies()
-    func loadMovieThumbnail(_ url: String?, completion: ((Data?) -> Void)?)
 }
 
 class MoviesRepository {
-    static let shared: MoviesRepository = MoviesRepository()
+    static let shared: MoviesRepositoryProtocol = MoviesRepository()
 
-    private let moviesService: MoviesServiceProtocol = MoviesService()
-    private let genresService: GenresServiceProtocol = GenresService()
+    private let contentService: ContentServiceProtocol = ContentService()
     private var totalNumberOfMovies: Int = 0
     private var totalNumberOfPages: Int = 0
     private var lastLoadedPage: Int = 0
     private var loadedMovies: [Movie] = []
+    private var isLoadingGenres: Bool = false
     private var isLoadingMovies: Bool = false
     private var genres: [Genre]? = nil
     weak var delegate: MoviesRepositoryDelegate?
 
     private func loadGenres(completion: @escaping () -> Void) {
-        genresService.requestGenres { [weak self] (genresDictionary, error) in
+        guard !isLoadingGenres else { return }
+        isLoadingGenres = true
+        contentService.request(.movieGenres) { [weak self] (genresDictionary, error) in
             if error != nil {
                 //TODO handle error
             }
@@ -48,7 +49,10 @@ class MoviesRepository {
             })
 
             self?.genres = genres ?? [] // genres is no longer nil after this point
-            completion()
+            DispatchQueue.main.async { [weak self] in
+                self?.isLoadingGenres = false
+                completion()
+            }
         }
     }
 
@@ -141,7 +145,7 @@ extension MoviesRepository: MoviesRepositoryProtocol {
 
         guard !isLoadingMovies else { return }
         isLoadingMovies = true
-        moviesService.requestMovies(page: newPage) { [weak self] (moviesDictionary, error) in
+        contentService.request(.popularMovies, page: newPage) { [weak self] (moviesDictionary, error) in
             if error != nil {
                 //TODO handle error
             }
@@ -153,9 +157,5 @@ extension MoviesRepository: MoviesRepositoryProtocol {
                 strongSelf.delegate?.moviesRepositoryDidUpdateListOfMovies(strongSelf)
             }
         }
-    }
-
-    func loadMovieThumbnail(_ url: String?, completion: ((Data?) -> Void)?) {
-        moviesService.requestMovieThumbnail(url, completion: completion)
     }
 }

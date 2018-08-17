@@ -62,7 +62,7 @@ extension MovieListViewController: UITableViewDataSource {
             let popularityColor = popularityScore.popularityColor(highestPopularity: highestPopularity)
 
             movieCell.configureContents(movieViewData, popularityColor: popularityColor)
-            presenter.movieThumbnail(movieViewData.thumbnailURL) { image in
+            presenter.movieThumbnail(movieViewData.thumbnailURL, width: movieCell.thumbnailSize.width) { image in
                 movieCell.configureThumbnail(image, url: movieViewData.thumbnailURL)
             }
         }

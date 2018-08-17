@@ -23,6 +23,7 @@ class MovieCell: UITableViewCell {
     @IBOutlet private weak var popularityLabel: UILabel!
     @IBOutlet private weak var releaseYearLabel: UILabel!
     private var currentThumbnailURL: String?
+    var thumbnailSize: CGSize { return thumbnailImageView.frame.size }
 
     override func layoutSubviews() {
         super.layoutSubviews()
