@@ -13,6 +13,7 @@ struct Movie {
     let title: String?
     let tagline: String?
     let genres: [String]?
+    let languages: [String]?
     let description: String?
     let originalTitle: String?
     let originalLanguageCode: String?

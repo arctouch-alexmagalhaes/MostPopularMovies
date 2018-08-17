@@ -6,15 +6,18 @@
 //  Copyright © 2018 ArcTouch. All rights reserved.
 //
 
+import Foundation
+
 struct MovieDetailsViewData {
-    let thumbnailURL: String
-    let title: String
-    let genres: [String]
-    let popularityScore: Double
-    let releaseYear: String
-    let description: String
-    let runtime: Int
-    let revenue: Int
-    let language: String
-    let websiteLink: String
+    let backdropImageURL: String?
+    let posterImageURL: String?
+    let title: String?
+    let genres: NSAttributedString?
+    let popularityScore: Double?
+    let releaseYear: String?
+    let description: NSAttributedString?
+    let runtime: String?
+    let revenue: NSAttributedString?
+    let languages: NSAttributedString?
+    let websiteLink: NSAttributedString?
 }

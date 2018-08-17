@@ -8,10 +8,20 @@
 
 import Alamofire
 
-enum ContentRoute: String {
+enum ContentRoute {
     case configuration
-    case popularMovies = "movie/popular"
-    case movieGenres = "genre/movie/list"
+    case popularMovies
+    case movieGenres
+    case movie(id: Int)
+
+    var rawValue: String {
+        switch self {
+        case .configuration: return "/configuration"
+        case .popularMovies: return "/movie/popular"
+        case .movieGenres: return "/genre/movie/list"
+        case .movie(let id): return "/movie/\(id)"
+        }
+    }
 }
 
 enum ContentServiceError: Error {
@@ -37,7 +47,7 @@ class ContentService {
             "Accept": "application/json"
         ]
 
-        let url = "\(ServiceConstants.baseURL)/\(route.rawValue)"
+        let url = "\(ServiceConstants.baseURL)\(route.rawValue)"
         let request = Alamofire.request(url,
                                         parameters: parameters,
                                         encoding: URLEncoding.queryString,

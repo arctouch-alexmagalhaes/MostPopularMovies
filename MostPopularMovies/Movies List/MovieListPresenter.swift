@@ -14,7 +14,7 @@ protocol MovieListPresenterProtocol {
 
     func viewDidLoad()
     func movie(at indexPath: IndexPath) -> MovieCellViewData?
-    func movieThumbnail(_ url: String?, width: CGFloat, completion: ((UIImage?) -> Void)?)
+    func moviePoster(_ url: String?, width: CGFloat, completion: ((UIImage?) -> Void)?)
 }
 
 class MovieListPresenter {
@@ -43,7 +43,7 @@ extension MovieListPresenter: MovieListPresenterProtocol {
         guard indexPath.row < moviesRepository.numberOfMovies else { return nil }
         let movie = moviesRepository.movie(at: indexPath.row)
 
-        let genre = movie.genres?.joined(separator: ", ")
+        let genres = movie.genres?.joined(separator: ", ")
 
         var releaseYear: String?
         if let releaseDate = movie.releaseDate {
@@ -51,12 +51,12 @@ extension MovieListPresenter: MovieListPresenterProtocol {
         }
         return MovieCellViewData(thumbnailURL: movie.posterImagePath,
                                  title: movie.title,
-                                 genres: genre,
+                                 genres: genres,
                                  popularityScore: movie.popularity,
                                  releaseYear: releaseYear)
     }
 
-    func movieThumbnail(_ url: String?, width: CGFloat, completion: ((UIImage?) -> Void)?) {
+    func moviePoster(_ url: String?, width: CGFloat, completion: ((UIImage?) -> Void)?) {
         imagesRepository.loadPosterImage(url, width: Int(width)) { data in
             guard let data = data else {
                 completion?(nil)

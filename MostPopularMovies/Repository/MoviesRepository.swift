@@ -18,6 +18,7 @@ protocol MoviesRepositoryProtocol: class {
 
     func movie(at index: Int) -> Movie
     func loadMovies()
+    func loadMovieDetails(_ id: Int, completion: ((Movie?) -> Void)?)
 }
 
 class MoviesRepository {
@@ -77,43 +78,50 @@ class MoviesRepository {
         }
     }
 
-    private func parseMovie(_ movieDictionary: [AnyHashable: Any]) -> Movie {
+    private func parseMovie(_ movieDictionary: [AnyHashable: Any]?) -> Movie {
+        let dictionary = movieDictionary ?? [:]
         var genres: [String]?
-        if let genreObjects = movieDictionary["genres"] as? [[AnyHashable: Any]] {
+        if let genreObjects = dictionary["genres"] as? [[AnyHashable: Any]] {
             genres = genreObjects.compactMap { $0["name"] as? String }
-        } else if let genreIDs = movieDictionary["genre_ids"] as? [Int] {
+        } else if let genreIDs = dictionary["genre_ids"] as? [Int] {
             genres = self.genres?.compactMap({ genre -> String? in
                 guard genreIDs.contains(genre.id) else { return nil }
                 return genre.name
             })
         }
 
+        var languages: [String]?
+        if let languageObjects = dictionary["spoken_languages"] as? [[AnyHashable: Any]] {
+            languages = languageObjects.compactMap { $0["name"] as? String }
+        }
+
         var releaseDate: Date?
-        if let dateString = movieDictionary["release_date"] as? String {
+        if let dateString = dictionary["release_date"] as? String {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             releaseDate = dateFormatter.date(from: dateString)
         }
 
-        return Movie(id: movieDictionary["id"] as? Int,
-                     title: movieDictionary["title"] as? String,
-                     tagline: movieDictionary["tagline"] as? String,
+        return Movie(id: dictionary["id"] as? Int,
+                     title: dictionary["title"] as? String,
+                     tagline: dictionary["tagline"] as? String,
                      genres: genres,
-                     description: movieDictionary["overview"] as? String,
-                     originalTitle: movieDictionary["original_title"] as? String,
-                     originalLanguageCode: movieDictionary["original_language"] as? String,
+                     languages: languages,
+                     description: dictionary["overview"] as? String,
+                     originalTitle: dictionary["original_title"] as? String,
+                     originalLanguageCode: dictionary["original_language"] as? String,
                      releaseDate: releaseDate,
-                     runtimeInMinutes: movieDictionary["runtime"] as? Int,
-                     budget: movieDictionary["budget"] as? Int,
-                     revenue: movieDictionary["revenue"] as? Int,
-                     popularity: movieDictionary["popularity"] as? Double,
-                     voteAverage: movieDictionary["vote_average"] as? Double,
-                     voteCount: movieDictionary["vote_count"] as? Int,
-                     status: movieDictionary["status"] as? String,
-                     posterImagePath: movieDictionary["poster_path"] as? String,
-                     backdropImagePath: movieDictionary["backdrop_path"] as? String,
-                     websitePath: movieDictionary["homepage"] as? String,
-                     isAdult: movieDictionary["adult"] as? Bool)
+                     runtimeInMinutes: dictionary["runtime"] as? Int,
+                     budget: dictionary["budget"] as? Int,
+                     revenue: dictionary["revenue"] as? Int,
+                     popularity: dictionary["popularity"] as? Double,
+                     voteAverage: dictionary["vote_average"] as? Double,
+                     voteCount: dictionary["vote_count"] as? Int,
+                     status: dictionary["status"] as? String,
+                     posterImagePath: dictionary["poster_path"] as? String,
+                     backdropImagePath: dictionary["backdrop_path"] as? String,
+                     websitePath: dictionary["homepage"] as? String,
+                     isAdult: dictionary["adult"] as? Bool)
     }
 }
 
@@ -155,6 +163,22 @@ extension MoviesRepository: MoviesRepositoryProtocol {
                 guard let strongSelf = self else { return }
                 strongSelf.isLoadingMovies = false
                 strongSelf.delegate?.moviesRepositoryDidUpdateListOfMovies(strongSelf)
+            }
+        }
+    }
+
+    func loadMovieDetails(_ id: Int, completion: ((Movie?) -> Void)?) {
+        contentService.request(.movie(id: id)) { [weak self] (movieDictionary, error) in
+            if error != nil {
+                //TODO handle error
+            }
+
+            let movie: Movie? = self?.parseMovie(movieDictionary)
+            if let movieIndex = self?.loadedMovies.index(where: { $0.id == id }), let loadedMovie = movie {
+                self?.loadedMovies[movieIndex] = loadedMovie
+            }
+            DispatchQueue.main.async {
+                completion?(movie)
             }
         }
     }
