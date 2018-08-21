@@ -9,6 +9,7 @@
 import Foundation
 
 protocol MoviesRepositoryDelegate: class {
+    func moviesRepositoryDidReloadListOfMovies(_ moviesRepository: MoviesRepositoryProtocol)
     func moviesRepositoryDidUpdateListOfMovies(_ moviesRepository: MoviesRepositoryProtocol)
 }
 
@@ -18,6 +19,7 @@ protocol MoviesRepositoryProtocol: class {
 
     func movie(at index: Int) -> Movie
     func loadMovies()
+    func searchForMovies(searchQuery: String)
     func loadMovieDetails(_ id: Int, completion: ((Movie?) -> Void)?)
 }
 
@@ -25,13 +27,19 @@ class MoviesRepository {
     static let shared: MoviesRepositoryProtocol = MoviesRepository()
 
     private let contentService: ContentServiceProtocol = ContentService()
+
     private var totalNumberOfMovies: Int = 0
     private var totalNumberOfPages: Int = 0
     private var lastLoadedPage: Int = 0
     private var loadedMovies: [Movie] = []
+    private var genres: [Genre]? = nil
+
     private var isLoadingGenres: Bool = false
     private var isLoadingMovies: Bool = false
-    private var genres: [Genre]? = nil
+
+    private var currentSearchQuery: String = ""
+    private var pendingSearchQuery: String?
+    
     weak var delegate: MoviesRepositoryDelegate?
 
     private func loadGenres(completion: @escaping () -> Void) {
@@ -57,6 +65,20 @@ class MoviesRepository {
         }
     }
 
+    private func performPendingSearchIfNeeded() {
+        guard !isLoadingGenres, !isLoadingMovies, let searchQuery = pendingSearchQuery else { return }
+
+        pendingSearchQuery = nil
+        guard currentSearchQuery != searchQuery else { return }
+
+        currentSearchQuery = searchQuery
+        lastLoadedPage = 0
+        totalNumberOfMovies = 0
+        totalNumberOfPages = 0
+        loadedMovies = []
+        loadMovies()
+    }
+
     private func parseMoviesDictionary(_ moviesDictionary: [AnyHashable: Any]?) {
         guard let moviesDictionary = moviesDictionary else { return }
 
@@ -76,6 +98,7 @@ class MoviesRepository {
             let newMovies = results.map { self.parseMovie($0) }
             loadedMovies.append(contentsOf: newMovies)
         }
+        loadedMovies.sort { ($0.popularity ?? 0) > ($1.popularity ?? 0) }
     }
 
     private func parseMovie(_ movieDictionary: [AnyHashable: Any]?) -> Movie {
@@ -153,7 +176,8 @@ extension MoviesRepository: MoviesRepositoryProtocol {
 
         guard !isLoadingMovies else { return }
         isLoadingMovies = true
-        contentService.request(.popularMovies, page: newPage) { [weak self] (moviesDictionary, error) in
+
+        let completion: ([AnyHashable: Any]?, Error?) -> Void = { [weak self] (moviesDictionary, error) in
             if error != nil {
                 //TODO handle error
             }
@@ -162,9 +186,25 @@ extension MoviesRepository: MoviesRepositoryProtocol {
             DispatchQueue.main.async { [weak self] in
                 guard let strongSelf = self else { return }
                 strongSelf.isLoadingMovies = false
-                strongSelf.delegate?.moviesRepositoryDidUpdateListOfMovies(strongSelf)
+                if newPage > 1 {
+                    strongSelf.delegate?.moviesRepositoryDidUpdateListOfMovies(strongSelf)
+                } else {
+                    strongSelf.delegate?.moviesRepositoryDidReloadListOfMovies(strongSelf)
+                }
+                strongSelf.performPendingSearchIfNeeded()
             }
         }
+
+        if !currentSearchQuery.isEmpty {
+            contentService.request(.searchMovies, query: currentSearchQuery, page: newPage, completion: completion)
+        } else {
+            contentService.request(.popularMovies, page: newPage, completion: completion)
+        }
+    }
+
+    func searchForMovies(searchQuery: String) {
+        pendingSearchQuery = searchQuery
+        performPendingSearchIfNeeded()
     }
 
     func loadMovieDetails(_ id: Int, completion: ((Movie?) -> Void)?) {

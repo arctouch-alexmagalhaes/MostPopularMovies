@@ -9,7 +9,7 @@
 import UIKit
 
 protocol MovieListViewProtocol: class {
-    func dataIsReady()
+    func reloadData(scrollingToTop: Bool)
 }
 
 class MovieListViewController: UIViewController {
@@ -25,6 +25,7 @@ class MovieListViewController: UIViewController {
         super.viewDidLoad()
         tableView.rowHeight = movieCellHeight
         tableView.tableFooterView = UIView()
+        addSearchBar()
         presenter.viewDidLoad()
     }
 
@@ -36,11 +37,28 @@ class MovieListViewController: UIViewController {
 
         movieDetailsView.movieIndexPath = selectedIndexPath
     }
+
+    private func addSearchBar() {
+        let searchBar = UISearchBar()
+        searchBar.placeholder = "Search for a movie"
+        searchBar.delegate = self
+        searchBar.tintColor = .magenta
+        searchBar.showsCancelButton = true
+        navigationItem.titleView = searchBar
+    }
 }
 
 extension MovieListViewController: MovieListViewProtocol {
-    func dataIsReady() {
+    func reloadData(scrollingToTop: Bool) {
+        // This was the only approach that worked on iOS 11
+        if scrollingToTop {
+            tableView.setContentOffset(.zero, animated: false)
+        }
         tableView.reloadData()
+        if scrollingToTop {
+            tableView.layoutIfNeeded()
+            tableView.setContentOffset(.zero, animated: false)
+        }
     }
 }
 
@@ -62,7 +80,7 @@ extension MovieListViewController: UITableViewDataSource {
             let popularityColor = popularityScore.popularityColor(highestPopularity: highestPopularity)
 
             movieCell.configureContents(movieViewData, popularityColor: popularityColor)
-            presenter.moviePoster(movieViewData.thumbnailURL, width: movieCell.thumbnailSize.width) { image in
+            presenter.loadMoviePoster(movieViewData.thumbnailURL, width: movieCell.thumbnailSize.width) { image in
                 movieCell.configureThumbnail(image, url: movieViewData.thumbnailURL)
             }
         }
@@ -75,6 +93,22 @@ extension MovieListViewController: UITableViewDelegate {
         selectedIndexPath = indexPath
         performSegue(withIdentifier: movieDetailsSegueIdentifier, sender: self)
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+extension MovieListViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        presenter.searchTextDidChange(searchText)
+    }
+
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
+
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+        searchBar.text = nil
+        presenter.searchTextDidChange("")
     }
 }
 

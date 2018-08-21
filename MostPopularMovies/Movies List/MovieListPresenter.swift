@@ -14,7 +14,8 @@ protocol MovieListPresenterProtocol {
 
     func viewDidLoad()
     func movie(at indexPath: IndexPath) -> MovieCellViewData?
-    func moviePoster(_ url: String?, width: CGFloat, completion: ((UIImage?) -> Void)?)
+    func loadMoviePoster(_ url: String?, width: CGFloat, completion: ((UIImage?) -> Void)?)
+    func searchTextDidChange(_ searchText: String)
 }
 
 class MovieListPresenter {
@@ -56,7 +57,7 @@ extension MovieListPresenter: MovieListPresenterProtocol {
                                  releaseYear: releaseYear)
     }
 
-    func moviePoster(_ url: String?, width: CGFloat, completion: ((UIImage?) -> Void)?) {
+    func loadMoviePoster(_ url: String?, width: CGFloat, completion: ((UIImage?) -> Void)?) {
         imagesRepository.loadPosterImage(url, width: Int(width)) { data in
             guard let data = data else {
                 completion?(nil)
@@ -65,10 +66,18 @@ extension MovieListPresenter: MovieListPresenterProtocol {
             completion?(UIImage(data: data))
         }
     }
+
+    func searchTextDidChange(_ searchText: String) {
+        moviesRepository.searchForMovies(searchQuery: searchText)
+    }
 }
 
 extension MovieListPresenter: MoviesRepositoryDelegate {
+    func moviesRepositoryDidReloadListOfMovies(_ moviesRepository: MoviesRepositoryProtocol) {
+        view?.reloadData(scrollingToTop: true)
+    }
+
     func moviesRepositoryDidUpdateListOfMovies(_ moviesRepository: MoviesRepositoryProtocol) {
-        view?.dataIsReady()
+        view?.reloadData(scrollingToTop: false)
     }
 }

@@ -23,8 +23,8 @@ class MovieDetailsPresenter {
     private let moviesRepository: MoviesRepositoryProtocol = MoviesRepository.shared
     private let imagesRepository: ImagesRepositoryProtocol = ImagesRepository.shared
     private let font = UIFont.systemFont(ofSize: 17.0)
-    private let sectionTitleColor = UIColor(red: 150.0 / 255.0, green: 124.0 / 255.0, blue: 157.0 / 255.0, alpha: 1.0)
-    private let sectionContentColor = UIColor(red: 159.0 / 255.0, green: 180.0 / 255.0, blue: 206.0 / 255.0, alpha: 1.0)
+    private let sectionTitleColor: UIColor = .magenta
+    private let sectionContentColor: UIColor = .mediumCyanBlue
     private lazy var sectionTitleAttributes = [NSAttributedStringKey.font: font,
                                                NSAttributedStringKey.foregroundColor: sectionTitleColor]
     private lazy var sectionContentAttributes = [NSAttributedStringKey.font: font,
@@ -80,7 +80,7 @@ class MovieDetailsPresenter {
     private func descriptionAttributedText(from descriptionText: String?) -> NSAttributedString? {
         guard let descriptionString = descriptionText else { return nil }
         let font: UIFont = UIFont.systemFont(ofSize: 14.0)
-        let color = UIColor(red: 60.0 / 255.0, green: 44.0 / 255.0, blue: 82.0 / 255.0, alpha: 1.0)
+        let color: UIColor = .darkBlueMagenta
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.minimumLineHeight = 20.0
         paragraphStyle.maximumLineHeight = 20.0
@@ -117,11 +117,11 @@ class MovieDetailsPresenter {
         website = website.replacingOccurrences(of: "https://", with: "")
         website = website.replacingOccurrences(of: "http://", with: "")
         let font: UIFont = UIFont.systemFont(ofSize: 14.0)
-        let titleColor = UIColor(red: 60.0 / 255.0, green: 44.0 / 255.0, blue: 82.0 / 255.0, alpha: 1.0)
+        let titleColor: UIColor = .darkBlueMagenta
         let titleAttributes = [NSAttributedStringKey.font: font,
                                NSAttributedStringKey.foregroundColor: titleColor]
         let title = NSAttributedString(string: "Website: ", attributes: titleAttributes)
-        let contentColor = UIColor(red: 166.0 / 255.0, green: 150.0 / 255.0, blue: 184.0 / 255.0, alpha: 1.0)
+        let contentColor: UIColor = .mediumBlueMagenta
         let contentAttributes = [NSAttributedStringKey.font: font,
                                  NSAttributedStringKey.foregroundColor: contentColor]
         let content = NSAttributedString(string: website, attributes: contentAttributes)

@@ -11,7 +11,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Most Popular Movies-->
+        <!--Movie List View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="MovieListViewController" customModule="MostPopularMovies" customModuleProvider="target" sceneMemberID="viewController">
@@ -120,7 +120,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Most Popular Movies" largeTitleDisplayMode="always" id="9h9-wf-APq">
+                    <navigationItem key="navigationItem" id="9h9-wf-APq">
                         <barButtonItem key="backBarButtonItem" title=" " id="37c-qF-3YP">
                             <color key="tintColor" red="0.23529411764705882" green="0.17254901960784313" blue="0.32156862745098036" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         </barButtonItem>

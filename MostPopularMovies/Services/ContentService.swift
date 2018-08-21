@@ -11,6 +11,7 @@ import Alamofire
 enum ContentRoute {
     case configuration
     case popularMovies
+    case searchMovies
     case movieGenres
     case movie(id: Int)
 
@@ -18,6 +19,7 @@ enum ContentRoute {
         switch self {
         case .configuration: return "/configuration"
         case .popularMovies: return "/movie/popular"
+        case .searchMovies: return "/search/movie"
         case .movieGenres: return "/genre/movie/list"
         case .movie(let id): return "/movie/\(id)"
         }
@@ -31,6 +33,8 @@ enum ContentServiceError: Error {
 protocol ContentServiceProtocol {
     func request(_ route: ContentRoute, completion: @escaping (([AnyHashable: Any]?, Error?) -> Void))
     func request(_ route: ContentRoute, page: Int, completion: @escaping (([AnyHashable: Any]?, Error?) -> Void))
+    func request(_ route: ContentRoute, query: String, completion: @escaping (([AnyHashable: Any]?, Error?) -> Void))
+    func request(_ route: ContentRoute, query: String?, page: Int?, completion: @escaping (([AnyHashable: Any]?, Error?) -> Void))
 }
 
 class ContentService {
@@ -69,14 +73,28 @@ extension ContentService: ContentServiceProtocol {
     }
 
     func request(_ route: ContentRoute, page: Int, completion: @escaping (([AnyHashable : Any]?, Error?) -> Void)) {
-        guard page >= minimumPageNumber && page <= maximumPageNumber else {
-            completion(nil, ContentServiceError.invalidPage)
-            return
+        request(route, query: nil, page: page, completion: completion)
+    }
+
+    func request(_ route: ContentRoute, query: String, completion: @escaping (([AnyHashable : Any]?, Error?) -> Void)) {
+        request(route, query: query, page: nil, completion: completion)
+    }
+
+    func request(_ route: ContentRoute, query: String?, page: Int?, completion: @escaping (([AnyHashable : Any]?, Error?) -> Void)) {
+        var additionalParameters: Parameters = [:]
+
+        if let page = page {
+            guard page >= minimumPageNumber && page <= maximumPageNumber else {
+                completion(nil, ContentServiceError.invalidPage)
+                return
+            }
+            additionalParameters["page"] = page
         }
 
-        let parameters: Parameters = [
-            "page": page
-        ]
-        request(route, additionalParameters: parameters, completion: completion)
+        if let query = query {
+            additionalParameters["query"] = query
+        }
+
+        request(route, additionalParameters: additionalParameters, completion: completion)
     }
 }
