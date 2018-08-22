@@ -14,6 +14,7 @@ protocol MovieListViewProtocol: class {
 
 class MovieListViewController: UIViewController {
     @IBOutlet private weak var tableView: UITableView!
+    @IBOutlet private weak var loadingView: UIView!
     private let movieCellHeight: CGFloat = 140
     private let movieCellIdentifier = "movieCellIdentifier"
     private let movieDetailsSegueIdentifier = "movieDetailsSegue"
@@ -28,6 +29,7 @@ class MovieListViewController: UIViewController {
         addRefreshControl()
         addSearchBar()
         presenter.viewDidLoad()
+        showLoadingView()
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -58,12 +60,22 @@ class MovieListViewController: UIViewController {
         searchBar.showsCancelButton = true
         navigationItem.titleView = searchBar
     }
+
+    private func showLoadingView() {
+        loadingView.isHidden = false
+    }
+
+    private func hideLoadingView() {
+        loadingView.isHidden = true
+    }
 }
 
 extension MovieListViewController: MovieListViewProtocol {
     func reloadData(scrollingToTop: Bool) {
         if let refreshControl = tableView.refreshControl, refreshControl.isRefreshing {
             refreshControl.endRefreshing()
+        } else {
+            hideLoadingView()
         }
 
         // This was the only approach that worked on iOS 11
@@ -115,6 +127,7 @@ extension MovieListViewController: UITableViewDelegate {
 extension MovieListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         presenter.searchTextDidChange(searchText)
+        showLoadingView()
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {

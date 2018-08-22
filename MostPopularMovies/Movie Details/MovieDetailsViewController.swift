@@ -28,6 +28,7 @@ class MovieDetailsViewController: UIViewController {
     @IBOutlet private weak var popularityLabel: UILabel!
     @IBOutlet private weak var descriptionLabel: UILabel!
     @IBOutlet private weak var websiteLabel: UILabel!
+    @IBOutlet private weak var loadingView: UIActivityIndicatorView!
     private lazy var presenter: MovieDetailsPresenterProtocol = MovieDetailsPresenter(view: self)
     private var backdropGradient: CAGradientLayer?
     var movieIndexPath: IndexPath?
@@ -67,6 +68,7 @@ class MovieDetailsViewController: UIViewController {
         title = movieTitle
         titleLabel.text = movieTitle
 
+        loadingView.alpha = 1.0
         presenter.movieDetails(at: movieIndexPath) { [weak self] viewData in
             guard let strongSelf = self else { return }
             strongSelf.titleLabel.text = viewData?.title
@@ -84,6 +86,7 @@ class MovieDetailsViewController: UIViewController {
             strongSelf.updateScrollViewContentSize()
             UIView.animate(withDuration: 0.3, animations: { [weak self] in
                 guard let strongSelf = self else { return }
+                strongSelf.loadingView.alpha = 0.0
                 strongSelf.detailsView.alpha = 1.0
                 strongSelf.popularityLabel.alpha = 1.0
                 strongSelf.descriptionLabel.alpha = 1.0
