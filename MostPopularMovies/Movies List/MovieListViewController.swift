@@ -25,6 +25,7 @@ class MovieListViewController: UIViewController {
         super.viewDidLoad()
         tableView.rowHeight = movieCellHeight
         tableView.tableFooterView = UIView()
+        addRefreshControl()
         addSearchBar()
         presenter.viewDidLoad()
     }
@@ -36,6 +37,17 @@ class MovieListViewController: UIViewController {
         }
 
         movieDetailsView.movieIndexPath = selectedIndexPath
+    }
+
+    private func addRefreshControl() {
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshTableView), for: .valueChanged)
+        refreshControl.tintColor = .magenta
+        tableView.refreshControl = refreshControl
+    }
+
+    @objc private func refreshTableView() {
+        presenter.viewDidStartRefreshing()
     }
 
     private func addSearchBar() {
@@ -50,6 +62,10 @@ class MovieListViewController: UIViewController {
 
 extension MovieListViewController: MovieListViewProtocol {
     func reloadData(scrollingToTop: Bool) {
+        if let refreshControl = tableView.refreshControl, refreshControl.isRefreshing {
+            refreshControl.endRefreshing()
+        }
+
         // This was the only approach that worked on iOS 11
         if scrollingToTop {
             tableView.setContentOffset(.zero, animated: false)

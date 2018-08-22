@@ -13,6 +13,7 @@ protocol MovieListPresenterProtocol {
     var numberOfMovies: Int { get }
 
     func viewDidLoad()
+    func viewDidStartRefreshing()
     func movie(at indexPath: IndexPath) -> MovieCellViewData?
     func loadMoviePoster(_ url: String?, width: CGFloat, completion: ((UIImage?) -> Void)?)
     func searchTextDidChange(_ searchText: String)
@@ -37,6 +38,12 @@ extension MovieListPresenter: MovieListPresenterProtocol {
     func viewDidLoad() {
         imagesRepository.loadConfiguration { [weak self] in
             self?.moviesRepository.loadMovies()
+        }
+    }
+
+    func viewDidStartRefreshing() {
+        imagesRepository.loadConfiguration { [weak self] in
+            self?.moviesRepository.refreshMovies()
         }
     }
 

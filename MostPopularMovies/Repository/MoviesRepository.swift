@@ -19,6 +19,7 @@ protocol MoviesRepositoryProtocol: class {
 
     func movie(at index: Int) -> Movie
     func loadMovies()
+    func refreshMovies()
     func searchForMovies(searchQuery: String)
     func loadMovieDetails(_ id: Int, completion: ((Movie?) -> Void)?)
 }
@@ -200,6 +201,15 @@ extension MoviesRepository: MoviesRepositoryProtocol {
         } else {
             contentService.request(.popularMovies, page: newPage, completion: completion)
         }
+    }
+
+    func refreshMovies() {
+        genres = nil
+        lastLoadedPage = 0
+        totalNumberOfMovies = 0
+        totalNumberOfPages = 0
+        loadedMovies = []
+        loadMovies()
     }
 
     func searchForMovies(searchQuery: String) {
