@@ -43,7 +43,7 @@ class MovieDetailsPresenter {
             releaseYear = "\(Calendar.current.component(.year, from: releaseDate))"
         }
         let runtime: String? = runtimeText(from: movie.runtimeInMinutes)
-        
+
         var releaseYearAndRuntime: String?
         if let releaseYear = releaseYear, let runtime = runtime {
             releaseYearAndRuntime = "\(releaseYear)  |  \(runtime)"
@@ -64,7 +64,7 @@ class MovieDetailsPresenter {
         }
 
         let websiteLink: NSAttributedString? = websiteAttributedText(from: movie.websitePath)
-        
+
         let viewData = MovieDetailsViewData(backdropImageURL: movie.backdropImagePath,
                                             posterImageURL: movie.posterImagePath,
                                             title: movie.title,

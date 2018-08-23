@@ -34,7 +34,7 @@ class MovieListViewController: UIViewController {
         addSearchBar()
         presenter.viewDidLoad()
     }
-    
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard segue.identifier == movieDetailsSegueIdentifier,
             let movieDetailsView = segue.destination as? MovieDetailsViewProtocol else {

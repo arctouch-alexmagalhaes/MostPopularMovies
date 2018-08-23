@@ -34,14 +34,16 @@ protocol ContentServiceProtocol {
     func request(_ route: ContentRoute, completion: @escaping (([AnyHashable: Any]?, Error?) -> Void))
     func request(_ route: ContentRoute, page: Int, completion: @escaping (([AnyHashable: Any]?, Error?) -> Void))
     func request(_ route: ContentRoute, query: String, completion: @escaping (([AnyHashable: Any]?, Error?) -> Void))
-    func request(_ route: ContentRoute, query: String?, page: Int?, completion: @escaping (([AnyHashable: Any]?, Error?) -> Void))
+    func request(_ route: ContentRoute, query: String?, page: Int?,
+                 completion: @escaping (([AnyHashable: Any]?, Error?) -> Void))
 }
 
 class ContentService {
     private let minimumPageNumber: Int = 1
     private let maximumPageNumber: Int = 1000
 
-    private func request(_ route: ContentRoute, additionalParameters: Parameters, completion: @escaping (([AnyHashable : Any]?, Error?) -> Void)) {
+    private func request(_ route: ContentRoute, additionalParameters: Parameters,
+                         completion: @escaping (([AnyHashable: Any]?, Error?) -> Void)) {
         var parameters: Parameters = [
             "api_key": ServiceConstants.apiKey
         ]
@@ -68,19 +70,20 @@ class ContentService {
 }
 
 extension ContentService: ContentServiceProtocol {
-    func request(_ route: ContentRoute, completion: @escaping (([AnyHashable : Any]?, Error?) -> Void)) {
+    func request(_ route: ContentRoute, completion: @escaping (([AnyHashable: Any]?, Error?) -> Void)) {
         request(route, additionalParameters: [:], completion: completion)
     }
 
-    func request(_ route: ContentRoute, page: Int, completion: @escaping (([AnyHashable : Any]?, Error?) -> Void)) {
+    func request(_ route: ContentRoute, page: Int, completion: @escaping (([AnyHashable: Any]?, Error?) -> Void)) {
         request(route, query: nil, page: page, completion: completion)
     }
 
-    func request(_ route: ContentRoute, query: String, completion: @escaping (([AnyHashable : Any]?, Error?) -> Void)) {
+    func request(_ route: ContentRoute, query: String, completion: @escaping (([AnyHashable: Any]?, Error?) -> Void)) {
         request(route, query: query, page: nil, completion: completion)
     }
 
-    func request(_ route: ContentRoute, query: String?, page: Int?, completion: @escaping (([AnyHashable : Any]?, Error?) -> Void)) {
+    func request(_ route: ContentRoute, query: String?, page: Int?,
+                 completion: @escaping (([AnyHashable: Any]?, Error?) -> Void)) {
         var additionalParameters: Parameters = [:]
 
         if let page = page {

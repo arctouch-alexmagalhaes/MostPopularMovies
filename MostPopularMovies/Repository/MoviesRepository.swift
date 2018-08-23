@@ -34,14 +34,14 @@ class MoviesRepository {
     private var totalNumberOfPages: Int = 0
     private var lastLoadedPage: Int = 0
     private var loadedMovies: [Movie] = []
-    private var genres: [Genre]? = nil
+    private var genres: [Genre]?
 
     private var isLoadingGenres: Bool = false
     private var isLoadingMovies: Bool = false
 
     private var currentSearchQuery: String = ""
     private var pendingSearchQuery: String?
-    
+
     weak var delegate: MoviesRepositoryDelegate?
 
     private func loadGenres(completion: @escaping () -> Void) {
@@ -83,11 +83,7 @@ class MoviesRepository {
 
     private func handleMoviesResponse(requestedPage: Int, moviesDictionary: [AnyHashable: Any]?, error: Error?) {
         if let error = error {
-            if !currentSearchQuery.isEmpty {
-                print("Error while requesting movies with search query \"\(currentSearchQuery)\", page \(requestedPage). Error message: \(error.localizedDescription)")
-            } else {
-                print("Error while requesting popular movies, page \(requestedPage). Error message: \(error.localizedDescription)")
-            }
+            print("Error while requesting movies: \(error.localizedDescription)")
         }
 
         parseMoviesDictionary(moviesDictionary)
@@ -131,9 +127,9 @@ class MoviesRepository {
     }
 
     private func parseMovie(dictionary movieDictionary: [AnyHashable: Any]?, existingID: Int? = nil) -> Movie {
-        var existingMovie: Movie?
+        var movie: Movie?
         if let movieIndex = loadedMovies.index(where: { $0.id == existingID }) {
-            existingMovie = loadedMovies[movieIndex]
+            movie = loadedMovies[movieIndex]
         }
 
         let dictionary = movieDictionary ?? [:]
@@ -159,26 +155,26 @@ class MoviesRepository {
             releaseDate = dateFormatter.date(from: dateString)
         }
 
-        return Movie(id: dictionary["id"] as? Int ?? existingMovie?.id,
-                     title: dictionary["title"] as? String ?? existingMovie?.title,
-                     tagline: dictionary["tagline"] as? String ?? existingMovie?.tagline,
-                     genres: genres ?? existingMovie?.genres,
-                     languages: languages ?? existingMovie?.languages,
-                     description: dictionary["overview"] as? String ?? existingMovie?.description,
-                     originalTitle: dictionary["original_title"] as? String ?? existingMovie?.originalTitle,
-                     originalLanguageCode: dictionary["original_language"] as? String ?? existingMovie?.originalLanguageCode,
-                     releaseDate: releaseDate ?? existingMovie?.releaseDate,
-                     runtimeInMinutes: dictionary["runtime"] as? Int ?? existingMovie?.runtimeInMinutes,
-                     budget: dictionary["budget"] as? Int ?? existingMovie?.budget,
-                     revenue: dictionary["revenue"] as? Int ?? existingMovie?.revenue,
-                     popularity: dictionary["popularity"] as? Double ?? existingMovie?.popularity,
-                     voteAverage: dictionary["vote_average"] as? Double ?? existingMovie?.voteAverage,
-                     voteCount: dictionary["vote_count"] as? Int ?? existingMovie?.voteCount,
-                     status: dictionary["status"] as? String ?? existingMovie?.status,
-                     posterImagePath: dictionary["poster_path"] as? String ?? existingMovie?.posterImagePath,
-                     backdropImagePath: dictionary["backdrop_path"] as? String ?? existingMovie?.backdropImagePath,
-                     websitePath: dictionary["homepage"] as? String ?? existingMovie?.websitePath,
-                     isAdult: dictionary["adult"] as? Bool ?? existingMovie?.isAdult)
+        return Movie(id: dictionary["id"] as? Int ?? movie?.id,
+                     title: dictionary["title"] as? String ?? movie?.title,
+                     tagline: dictionary["tagline"] as? String ?? movie?.tagline,
+                     genres: genres ?? movie?.genres,
+                     languages: languages ?? movie?.languages,
+                     description: dictionary["overview"] as? String ?? movie?.description,
+                     originalTitle: dictionary["original_title"] as? String ?? movie?.originalTitle,
+                     originalLanguageCode: dictionary["original_language"] as? String ?? movie?.originalLanguageCode,
+                     releaseDate: releaseDate ?? movie?.releaseDate,
+                     runtimeInMinutes: dictionary["runtime"] as? Int ?? movie?.runtimeInMinutes,
+                     budget: dictionary["budget"] as? Int ?? movie?.budget,
+                     revenue: dictionary["revenue"] as? Int ?? movie?.revenue,
+                     popularity: dictionary["popularity"] as? Double ?? movie?.popularity,
+                     voteAverage: dictionary["vote_average"] as? Double ?? movie?.voteAverage,
+                     voteCount: dictionary["vote_count"] as? Int ?? movie?.voteCount,
+                     status: dictionary["status"] as? String ?? movie?.status,
+                     posterImagePath: dictionary["poster_path"] as? String ?? movie?.posterImagePath,
+                     backdropImagePath: dictionary["backdrop_path"] as? String ?? movie?.backdropImagePath,
+                     websitePath: dictionary["homepage"] as? String ?? movie?.websitePath,
+                     isAdult: dictionary["adult"] as? Bool ?? movie?.isAdult)
     }
 }
 

@@ -256,6 +256,7 @@
 			buildPhases = (
 				817A647F304589C16860401E /* [CP] Check Pods Manifest.lock */,
 				73639161212097F800E2EFAB /* Sources */,
+				7363EF07212EAA0400F56F3C /* ShellScript */,
 				73639162212097F800E2EFAB /* Frameworks */,
 				73639163212097F800E2EFAB /* Resources */,
 				461D574A464FF5059AFE7BDA /* [CP] Embed Pods Frameworks */,
@@ -413,6 +414,19 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MostPopularMovies/Pods-MostPopularMovies-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		7363EF07212EAA0400F56F3C /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\nswiftlint\nelse\necho \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi";
 		};
 		817A647F304589C16860401E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -648,6 +662,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = MostPopularMovies/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -666,6 +681,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = MostPopularMovies/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

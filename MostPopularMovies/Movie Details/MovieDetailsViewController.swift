@@ -69,33 +69,7 @@ class MovieDetailsViewController: UIViewController {
 
         loadingView.alpha = 1.0
         presenter.movieDetails(at: movieIndexPath) { [weak self] viewData in
-            guard let strongSelf = self else { return }
-            strongSelf.titleLabel.text = viewData?.title
-            strongSelf.releaseYearAndRuntimeLabel.text = viewData?.releaseYearAndRuntime
-            strongSelf.genreLabel.attributedText = viewData?.genres
-            strongSelf.languageLabel.attributedText = viewData?.languages
-            strongSelf.revenueLabel.attributedText = viewData?.revenue
-            let popularityLabelAlpha: CGFloat
-            if let popularityScore = viewData?.popularityScore {
-                strongSelf.popularityLabel.text = "\(Int(popularityScore))"
-                popularityLabelAlpha = 1.0
-            } else {
-                strongSelf.popularityLabel.text = nil
-                popularityLabelAlpha = 0.0
-            }
-            strongSelf.descriptionLabel.attributedText = viewData?.description
-            strongSelf.websiteLabel.attributedText = viewData?.websiteLink
-            strongSelf.view.setNeedsLayout()
-            strongSelf.view.layoutIfNeeded()
-            strongSelf.updateScrollViewContentSize()
-            UIView.animate(withDuration: 0.3, animations: { [weak self] in
-                guard let strongSelf = self else { return }
-                strongSelf.loadingView.alpha = 0.0
-                strongSelf.detailsView.alpha = 1.0
-                strongSelf.popularityLabel.alpha = popularityLabelAlpha
-                strongSelf.descriptionLabel.alpha = 1.0
-                strongSelf.websiteLabel.alpha = 1.0
-            })
+            self?.displayMovieDetailsViewData(viewData)
         }
 
         presenter.movieBackdrop(at: movieIndexPath, width: backdropImageView.frame.width) { [weak self] image in
@@ -115,6 +89,35 @@ class MovieDetailsViewController: UIViewController {
                               animations: { [weak self] in self?.posterImageView.image = image },
                               completion: nil)
         }
+    }
+
+    private func displayMovieDetailsViewData(_ viewData: MovieDetailsViewData?) {
+        titleLabel.text = viewData?.title
+        releaseYearAndRuntimeLabel.text = viewData?.releaseYearAndRuntime
+        genreLabel.attributedText = viewData?.genres
+        languageLabel.attributedText = viewData?.languages
+        revenueLabel.attributedText = viewData?.revenue
+        let popularityLabelAlpha: CGFloat
+        if let popularityScore = viewData?.popularityScore {
+            popularityLabel.text = "\(Int(popularityScore))"
+            popularityLabelAlpha = 1.0
+        } else {
+            popularityLabel.text = nil
+            popularityLabelAlpha = 0.0
+        }
+        descriptionLabel.attributedText = viewData?.description
+        websiteLabel.attributedText = viewData?.websiteLink
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+        updateScrollViewContentSize()
+        UIView.animate(withDuration: 0.3, animations: { [weak self] in
+            guard let strongSelf = self else { return }
+            strongSelf.loadingView.alpha = 0.0
+            strongSelf.detailsView.alpha = 1.0
+            strongSelf.popularityLabel.alpha = popularityLabelAlpha
+            strongSelf.descriptionLabel.alpha = 1.0
+            strongSelf.websiteLabel.alpha = 1.0
+        })
     }
 
     private func applyGradientToBackdropImageView() {

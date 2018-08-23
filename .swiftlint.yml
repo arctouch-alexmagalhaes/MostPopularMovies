@@ -1,0 +1,18 @@
+included:
+  - MostPopularMovies
+
+opt_in_rules:
+  - force_unwrapping
+  - closure_end_indentation
+  - closure_spacing
+  - empty_count
+  - first_where
+  - object_literal
+  - operator_usage_whitespace
+  - overridden_super_call
+  - redundant_nil_coalescing
+  - sorted_imports
+
+disabled_rules:
+  - object_literal
+  - identifier_name
