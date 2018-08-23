@@ -137,7 +137,8 @@ class MovieDetailsViewController: UIViewController {
     }
 
     private func updateScrollViewContentSize() {
-        scrollView.contentSize = CGSize(width: scrollView.frame.width, height: websiteLabel.frame.maxY + 20.0)
+        let contentMaxY = max(posterImageView.frame.maxY, websiteLabel.frame.maxY)
+        scrollView.contentSize = CGSize(width: scrollView.frame.width, height: contentMaxY + 12.0)
     }
 
     @objc private func didTapWebsiteLabel() {
