@@ -20,8 +20,7 @@ class MovieDetailsViewController: UIViewController {
     @IBOutlet private weak var posterImageView: UIImageView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var detailsView: UIView!
-    @IBOutlet private weak var releaseYearLabel: UILabel!
-    @IBOutlet private weak var runtimeLabel: UILabel!
+    @IBOutlet private weak var releaseYearAndRuntimeLabel: UILabel!
     @IBOutlet private weak var genreLabel: UILabel!
     @IBOutlet private weak var languageLabel: UILabel!
     @IBOutlet private weak var revenueLabel: UILabel!
@@ -72,13 +71,18 @@ class MovieDetailsViewController: UIViewController {
         presenter.movieDetails(at: movieIndexPath) { [weak self] viewData in
             guard let strongSelf = self else { return }
             strongSelf.titleLabel.text = viewData?.title
-            strongSelf.releaseYearLabel.text = viewData?.releaseYear
-            strongSelf.runtimeLabel.text = viewData?.runtime
+            strongSelf.releaseYearAndRuntimeLabel.text = viewData?.releaseYearAndRuntime
             strongSelf.genreLabel.attributedText = viewData?.genres
             strongSelf.languageLabel.attributedText = viewData?.languages
             strongSelf.revenueLabel.attributedText = viewData?.revenue
-            let popularityScore = viewData?.popularityScore ?? 0.0
-            strongSelf.popularityLabel.text = "\(Int(popularityScore))"
+            let popularityLabelAlpha: CGFloat
+            if let popularityScore = viewData?.popularityScore {
+                strongSelf.popularityLabel.text = "\(Int(popularityScore))"
+                popularityLabelAlpha = 1.0
+            } else {
+                strongSelf.popularityLabel.text = nil
+                popularityLabelAlpha = 0.0
+            }
             strongSelf.descriptionLabel.attributedText = viewData?.description
             strongSelf.websiteLabel.attributedText = viewData?.websiteLink
             strongSelf.view.setNeedsLayout()
@@ -88,7 +92,7 @@ class MovieDetailsViewController: UIViewController {
                 guard let strongSelf = self else { return }
                 strongSelf.loadingView.alpha = 0.0
                 strongSelf.detailsView.alpha = 1.0
-                strongSelf.popularityLabel.alpha = 1.0
+                strongSelf.popularityLabel.alpha = popularityLabelAlpha
                 strongSelf.descriptionLabel.alpha = 1.0
                 strongSelf.websiteLabel.alpha = 1.0
             })

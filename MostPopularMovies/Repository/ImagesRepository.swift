@@ -25,7 +25,6 @@ class ImagesRepository {
     func loadImage(_ relativeURL: String?, width: Int, availableWidths: [String], completion: ((Data?) -> Void)?) {
         guard let baseImageURL = configuration?.baseImageURL, let relativeURL = relativeURL else {
             completion?(nil)
-            // TODO handle error
             return
         }
 
@@ -44,8 +43,8 @@ class ImagesRepository {
 extension ImagesRepository: ImagesRepositoryProtocol {
     func loadConfiguration(completion: (() -> Void)?) {
         contentService.request(.configuration) { [weak self] (configurationDictionary, error) in
-            if error != nil {
-                //TODO handle error
+            if let error = error {
+                print("Error while requesting configuration: \(error.localizedDescription)")
             }
 
             let imagesDictionary = configurationDictionary?["images"] as? [String: Any]
@@ -64,7 +63,6 @@ extension ImagesRepository: ImagesRepositoryProtocol {
 
     func loadBackdropImage(_ relativeURL: String?, width: Int, completion: ((Data?) -> Void)?) {
         guard let sizes = configuration?.backdropSizes else {
-            //TODO handle error
             completion?(nil)
             return
         }
@@ -73,7 +71,6 @@ extension ImagesRepository: ImagesRepositoryProtocol {
 
     func loadPosterImage(_ relativeURL: String?, width: Int, completion: ((Data?) -> Void)?) {
         guard let sizes = configuration?.posterSizes else {
-            //TODO handle error
             completion?(nil)
             return
         }

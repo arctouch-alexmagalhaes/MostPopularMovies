@@ -32,13 +32,18 @@ class MovieListPresenter {
         self.view = view
         moviesRepository.delegate = self
     }
+
+    private func loadInitialMovies() {
+        imagesRepository.loadConfiguration { [weak self] in
+            self?.moviesRepository.loadMovies()
+        }
+    }
 }
 
 extension MovieListPresenter: MovieListPresenterProtocol {
     func viewDidLoad() {
-        imagesRepository.loadConfiguration { [weak self] in
-            self?.moviesRepository.loadMovies()
-        }
+        view?.showLoadingView()
+        loadInitialMovies()
     }
 
     func viewDidStartRefreshing() {
@@ -75,6 +80,7 @@ extension MovieListPresenter: MovieListPresenterProtocol {
     }
 
     func searchTextDidChange(_ searchText: String) {
+        view?.showLoadingView()
         moviesRepository.searchForMovies(searchQuery: searchText)
     }
 }
@@ -82,9 +88,18 @@ extension MovieListPresenter: MovieListPresenterProtocol {
 extension MovieListPresenter: MoviesRepositoryDelegate {
     func moviesRepositoryDidReloadListOfMovies(_ moviesRepository: MoviesRepositoryProtocol) {
         view?.reloadData(scrollingToTop: true)
+        view?.hideLoadingView()
     }
 
     func moviesRepositoryDidUpdateListOfMovies(_ moviesRepository: MoviesRepositoryProtocol) {
         view?.reloadData(scrollingToTop: false)
+        view?.hideLoadingView()
+    }
+
+    func moviesRepositoryDidFailLoadingMovies(_ moviesRepository: MoviesRepositoryProtocol) {
+        if moviesRepository.numberOfMovies == 0 {
+            view?.showErrorMessage()
+        }
+        view?.hideLoadingView()
     }
 }

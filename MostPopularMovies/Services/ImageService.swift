@@ -27,8 +27,8 @@ extension ImageService: ImageServiceProtocol {
             switch response.result {
             case .success(let value):
                 completion?(value)
-            case .failure:
-                // TODO error handling
+            case .failure(let error):
+                print("Error while requesting image from \(url). Error message: \(error.localizedDescription)")
                 completion?(nil)
             }
         }

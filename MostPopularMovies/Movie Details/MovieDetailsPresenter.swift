@@ -42,9 +42,20 @@ class MovieDetailsPresenter {
         if let releaseDate = movie.releaseDate {
             releaseYear = "\(Calendar.current.component(.year, from: releaseDate))"
         }
+        let runtime: String? = runtimeText(from: movie.runtimeInMinutes)
+        
+        var releaseYearAndRuntime: String?
+        if let releaseYear = releaseYear, let runtime = runtime {
+            releaseYearAndRuntime = "\(releaseYear)  |  \(runtime)"
+        } else {
+            if let releaseYear = releaseYear {
+                releaseYearAndRuntime = releaseYear
+            } else if let runtime = runtime {
+                releaseYearAndRuntime = runtime
+            }
+        }
 
         let description: NSAttributedString? = descriptionAttributedText(from: movie.description)
-        let runtime: String? = runtimeText(from: movie.runtimeInMinutes)
         let revenue: NSAttributedString? = revenueAttributedText(from: movie.revenue)
 
         var languages: NSAttributedString?
@@ -59,9 +70,8 @@ class MovieDetailsPresenter {
                                             title: movie.title,
                                             genres: genres,
                                             popularityScore: movie.popularity,
-                                            releaseYear: releaseYear,
+                                            releaseYearAndRuntime: releaseYearAndRuntime,
                                             description: description,
-                                            runtime: runtime,
                                             revenue: revenue,
                                             languages: languages,
                                             websiteLink: websiteLink)

@@ -10,11 +10,15 @@ import UIKit
 
 protocol MovieListViewProtocol: class {
     func reloadData(scrollingToTop: Bool)
+    func showErrorMessage()
+    func showLoadingView()
+    func hideLoadingView()
 }
 
 class MovieListViewController: UIViewController {
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var loadingView: UIView!
+    @IBOutlet private weak var errorLabel: UILabel!
     private let movieCellHeight: CGFloat = 140
     private let movieCellIdentifier = "movieCellIdentifier"
     private let movieDetailsSegueIdentifier = "movieDetailsSegue"
@@ -29,9 +33,8 @@ class MovieListViewController: UIViewController {
         addRefreshControl()
         addSearchBar()
         presenter.viewDidLoad()
-        showLoadingView()
     }
-
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard segue.identifier == movieDetailsSegueIdentifier,
             let movieDetailsView = segue.destination as? MovieDetailsViewProtocol else {
@@ -49,6 +52,7 @@ class MovieListViewController: UIViewController {
     }
 
     @objc private func refreshTableView() {
+        errorLabel.alpha = 0.0
         presenter.viewDidStartRefreshing()
     }
 
@@ -60,22 +64,16 @@ class MovieListViewController: UIViewController {
         searchBar.showsCancelButton = true
         navigationItem.titleView = searchBar
     }
-
-    private func showLoadingView() {
-        loadingView.isHidden = false
-    }
-
-    private func hideLoadingView() {
-        loadingView.isHidden = true
-    }
 }
 
 extension MovieListViewController: MovieListViewProtocol {
     func reloadData(scrollingToTop: Bool) {
+        UIView.animate(withDuration: 0.3) { [weak self] in
+            self?.errorLabel.alpha = 0.0
+        }
+
         if let refreshControl = tableView.refreshControl, refreshControl.isRefreshing {
             refreshControl.endRefreshing()
-        } else {
-            hideLoadingView()
         }
 
         // This was the only approach that worked on iOS 11
@@ -87,6 +85,24 @@ extension MovieListViewController: MovieListViewProtocol {
             tableView.layoutIfNeeded()
             tableView.setContentOffset(.zero, animated: false)
         }
+    }
+
+    func showErrorMessage() {
+        UIView.animate(withDuration: 0.3) { [weak self] in
+            self?.errorLabel.alpha = 1.0
+        }
+
+        if let refreshControl = tableView.refreshControl, refreshControl.isRefreshing {
+            refreshControl.endRefreshing()
+        }
+    }
+
+    func showLoadingView() {
+        loadingView.isHidden = false
+    }
+
+    func hideLoadingView() {
+        loadingView.isHidden = true
     }
 }
 
@@ -127,7 +143,6 @@ extension MovieListViewController: UITableViewDelegate {
 extension MovieListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         presenter.searchTextDidChange(searchText)
-        showLoadingView()
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -136,8 +151,10 @@ extension MovieListViewController: UISearchBarDelegate {
 
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
-        searchBar.text = nil
-        presenter.searchTextDidChange("")
+        if let searchText = searchBar.text, !searchText.isEmpty {
+            searchBar.text = nil
+            presenter.searchTextDidChange("")
+        }
     }
 }
 

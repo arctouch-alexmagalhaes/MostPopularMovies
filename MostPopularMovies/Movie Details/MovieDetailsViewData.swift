@@ -14,9 +14,8 @@ struct MovieDetailsViewData {
     let title: String?
     let genres: NSAttributedString?
     let popularityScore: Double?
-    let releaseYear: String?
+    let releaseYearAndRuntime: String?
     let description: NSAttributedString?
-    let runtime: String?
     let revenue: NSAttributedString?
     let languages: NSAttributedString?
     let websiteLink: NSAttributedString?

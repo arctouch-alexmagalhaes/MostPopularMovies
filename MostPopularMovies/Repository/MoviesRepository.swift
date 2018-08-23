@@ -11,6 +11,7 @@ import Foundation
 protocol MoviesRepositoryDelegate: class {
     func moviesRepositoryDidReloadListOfMovies(_ moviesRepository: MoviesRepositoryProtocol)
     func moviesRepositoryDidUpdateListOfMovies(_ moviesRepository: MoviesRepositoryProtocol)
+    func moviesRepositoryDidFailLoadingMovies(_ moviesRepository: MoviesRepositoryProtocol)
 }
 
 protocol MoviesRepositoryProtocol: class {
@@ -47,8 +48,8 @@ class MoviesRepository {
         guard !isLoadingGenres else { return }
         isLoadingGenres = true
         contentService.request(.movieGenres) { [weak self] (genresDictionary, error) in
-            if error != nil {
-                //TODO handle error
+            if let error = error {
+                print("Error while requesting genres: \(error.localizedDescription)")
             }
 
             let genresArray = genresDictionary?["genres"] as? [[String: Any]]
@@ -80,6 +81,33 @@ class MoviesRepository {
         loadMovies()
     }
 
+    private func handleMoviesResponse(requestedPage: Int, moviesDictionary: [AnyHashable: Any]?, error: Error?) {
+        if let error = error {
+            if !currentSearchQuery.isEmpty {
+                print("Error while requesting movies with search query \"\(currentSearchQuery)\", page \(requestedPage). Error message: \(error.localizedDescription)")
+            } else {
+                print("Error while requesting popular movies, page \(requestedPage). Error message: \(error.localizedDescription)")
+            }
+        }
+
+        parseMoviesDictionary(moviesDictionary)
+        DispatchQueue.main.async { [weak self] in
+            guard let strongSelf = self else { return }
+
+            strongSelf.isLoadingMovies = false
+
+            if error != nil {
+                strongSelf.delegate?.moviesRepositoryDidFailLoadingMovies(strongSelf)
+            } else if requestedPage > 1 {
+                strongSelf.delegate?.moviesRepositoryDidUpdateListOfMovies(strongSelf)
+            } else {
+                strongSelf.delegate?.moviesRepositoryDidReloadListOfMovies(strongSelf)
+            }
+
+            strongSelf.performPendingSearchIfNeeded()
+        }
+    }
+
     private func parseMoviesDictionary(_ moviesDictionary: [AnyHashable: Any]?) {
         guard let moviesDictionary = moviesDictionary else { return }
 
@@ -96,13 +124,18 @@ class MoviesRepository {
         }
 
         if let results = moviesDictionary["results"] as? [[AnyHashable: Any]] {
-            let newMovies = results.map { self.parseMovie($0) }
+            let newMovies = results.map { self.parseMovie(dictionary: $0) }
             loadedMovies.append(contentsOf: newMovies)
         }
         loadedMovies.sort { ($0.popularity ?? 0) > ($1.popularity ?? 0) }
     }
 
-    private func parseMovie(_ movieDictionary: [AnyHashable: Any]?) -> Movie {
+    private func parseMovie(dictionary movieDictionary: [AnyHashable: Any]?, existingID: Int? = nil) -> Movie {
+        var existingMovie: Movie?
+        if let movieIndex = loadedMovies.index(where: { $0.id == existingID }) {
+            existingMovie = loadedMovies[movieIndex]
+        }
+
         let dictionary = movieDictionary ?? [:]
         var genres: [String]?
         if let genreObjects = dictionary["genres"] as? [[AnyHashable: Any]] {
@@ -126,26 +159,26 @@ class MoviesRepository {
             releaseDate = dateFormatter.date(from: dateString)
         }
 
-        return Movie(id: dictionary["id"] as? Int,
-                     title: dictionary["title"] as? String,
-                     tagline: dictionary["tagline"] as? String,
-                     genres: genres,
-                     languages: languages,
-                     description: dictionary["overview"] as? String,
-                     originalTitle: dictionary["original_title"] as? String,
-                     originalLanguageCode: dictionary["original_language"] as? String,
-                     releaseDate: releaseDate,
-                     runtimeInMinutes: dictionary["runtime"] as? Int,
-                     budget: dictionary["budget"] as? Int,
-                     revenue: dictionary["revenue"] as? Int,
-                     popularity: dictionary["popularity"] as? Double,
-                     voteAverage: dictionary["vote_average"] as? Double,
-                     voteCount: dictionary["vote_count"] as? Int,
-                     status: dictionary["status"] as? String,
-                     posterImagePath: dictionary["poster_path"] as? String,
-                     backdropImagePath: dictionary["backdrop_path"] as? String,
-                     websitePath: dictionary["homepage"] as? String,
-                     isAdult: dictionary["adult"] as? Bool)
+        return Movie(id: dictionary["id"] as? Int ?? existingMovie?.id,
+                     title: dictionary["title"] as? String ?? existingMovie?.title,
+                     tagline: dictionary["tagline"] as? String ?? existingMovie?.tagline,
+                     genres: genres ?? existingMovie?.genres,
+                     languages: languages ?? existingMovie?.languages,
+                     description: dictionary["overview"] as? String ?? existingMovie?.description,
+                     originalTitle: dictionary["original_title"] as? String ?? existingMovie?.originalTitle,
+                     originalLanguageCode: dictionary["original_language"] as? String ?? existingMovie?.originalLanguageCode,
+                     releaseDate: releaseDate ?? existingMovie?.releaseDate,
+                     runtimeInMinutes: dictionary["runtime"] as? Int ?? existingMovie?.runtimeInMinutes,
+                     budget: dictionary["budget"] as? Int ?? existingMovie?.budget,
+                     revenue: dictionary["revenue"] as? Int ?? existingMovie?.revenue,
+                     popularity: dictionary["popularity"] as? Double ?? existingMovie?.popularity,
+                     voteAverage: dictionary["vote_average"] as? Double ?? existingMovie?.voteAverage,
+                     voteCount: dictionary["vote_count"] as? Int ?? existingMovie?.voteCount,
+                     status: dictionary["status"] as? String ?? existingMovie?.status,
+                     posterImagePath: dictionary["poster_path"] as? String ?? existingMovie?.posterImagePath,
+                     backdropImagePath: dictionary["backdrop_path"] as? String ?? existingMovie?.backdropImagePath,
+                     websitePath: dictionary["homepage"] as? String ?? existingMovie?.websitePath,
+                     isAdult: dictionary["adult"] as? Bool ?? existingMovie?.isAdult)
     }
 }
 
@@ -179,21 +212,7 @@ extension MoviesRepository: MoviesRepositoryProtocol {
         isLoadingMovies = true
 
         let completion: ([AnyHashable: Any]?, Error?) -> Void = { [weak self] (moviesDictionary, error) in
-            if error != nil {
-                //TODO handle error
-            }
-
-            self?.parseMoviesDictionary(moviesDictionary)
-            DispatchQueue.main.async { [weak self] in
-                guard let strongSelf = self else { return }
-                strongSelf.isLoadingMovies = false
-                if newPage > 1 {
-                    strongSelf.delegate?.moviesRepositoryDidUpdateListOfMovies(strongSelf)
-                } else {
-                    strongSelf.delegate?.moviesRepositoryDidReloadListOfMovies(strongSelf)
-                }
-                strongSelf.performPendingSearchIfNeeded()
-            }
+            self?.handleMoviesResponse(requestedPage: newPage, moviesDictionary: moviesDictionary, error: error)
         }
 
         if !currentSearchQuery.isEmpty {
@@ -219,14 +238,11 @@ extension MoviesRepository: MoviesRepositoryProtocol {
 
     func loadMovieDetails(_ id: Int, completion: ((Movie?) -> Void)?) {
         contentService.request(.movie(id: id)) { [weak self] (movieDictionary, error) in
-            if error != nil {
-                //TODO handle error
+            if let error = error {
+                print("Error while requesting details from movie \(id). Error message: \(error.localizedDescription)")
             }
 
-            let movie: Movie? = self?.parseMovie(movieDictionary)
-            if let movieIndex = self?.loadedMovies.index(where: { $0.id == id }), let loadedMovie = movie {
-                self?.loadedMovies[movieIndex] = loadedMovie
-            }
+            let movie: Movie? = self?.parseMovie(dictionary: movieDictionary, existingID: id)
             DispatchQueue.main.async {
                 completion?(movie)
             }
