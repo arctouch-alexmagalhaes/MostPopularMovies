@@ -5,6 +5,7 @@
     </device>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -17,20 +18,18 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Most Popular Movies" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="19" translatesAutoresizingMaskIntoConstraints="NO" id="cZh-wA-riy">
-                                <rect key="frame" x="87.5" y="276" width="200" height="136.5"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="originalLogo" translatesAutoresizingMaskIntoConstraints="NO" id="W8r-q8-yEx">
+                                <rect key="frame" x="74.5" y="231" width="225" height="225"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="200" id="4I1-Ix-bPg"/>
+                                    <constraint firstAttribute="width" secondItem="W8r-q8-yEx" secondAttribute="height" multiplier="1:1" id="Zdc-8F-yDm"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" type="system" weight="light" pointSize="38"/>
-                                <color key="textColor" red="0.23529411764705882" green="0.17254901960784313" blue="0.32156862745098036" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="cZh-wA-riy" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="0sy-8s-vy7"/>
-                            <constraint firstItem="cZh-wA-riy" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="cd8-II-owO"/>
+                            <constraint firstItem="W8r-q8-yEx" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="7jF-QE-e2s"/>
+                            <constraint firstItem="W8r-q8-yEx" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="BZO-3I-7SZ"/>
+                            <constraint firstItem="W8r-q8-yEx" firstAttribute="width" secondItem="Ze5-6b-2t3" secondAttribute="width" constant="-150" id="q03-sq-vcd"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
@@ -40,4 +39,7 @@
             <point key="canvasLocation" x="53" y="375"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="originalLogo" width="256" height="256"/>
+    </resources>
 </document>
