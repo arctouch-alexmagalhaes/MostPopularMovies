@@ -8,7 +8,7 @@ target 'MostPopularMovies' do
 
   target 'MostPopularMoviesTests' do
     inherit! :search_paths
-    # Pods for testing
+    pod 'OHHTTPStubs/Swift'
   end
 
   target 'MostPopularMoviesUITests' do

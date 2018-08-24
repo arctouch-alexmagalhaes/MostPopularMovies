@@ -1,5 +1,6 @@
 included:
   - MostPopularMovies
+  - MostPopularMoviesTests
 
 opt_in_rules:
   - force_unwrapping
@@ -16,3 +17,6 @@ opt_in_rules:
 disabled_rules:
   - object_literal
   - identifier_name
+
+empty_count:
+  severity: warning
