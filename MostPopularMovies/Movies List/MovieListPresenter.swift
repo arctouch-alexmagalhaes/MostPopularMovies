@@ -21,15 +21,19 @@ protocol MovieListPresenterProtocol {
 
 class MovieListPresenter {
     private weak var view: MovieListViewProtocol?
-    private let moviesRepository: MoviesRepositoryProtocol = MoviesRepository.shared
-    private let imagesRepository: ImagesRepositoryProtocol = ImagesRepository.shared
+    private let moviesRepository: MoviesRepositoryProtocol
+    private let imagesRepository: ImagesRepositoryProtocol
 
     var numberOfMovies: Int {
         return moviesRepository.numberOfMovies
     }
 
-    init(view: MovieListViewProtocol) {
+    init(view: MovieListViewProtocol,
+         moviesRepository: MoviesRepositoryProtocol = MoviesRepository.shared,
+         imagesRepository: ImagesRepositoryProtocol = ImagesRepository.shared) {
         self.view = view
+        self.moviesRepository = moviesRepository
+        self.imagesRepository = imagesRepository
         moviesRepository.delegate = self
     }
 
@@ -54,7 +58,7 @@ extension MovieListPresenter: MovieListPresenterProtocol {
 
     func movie(at indexPath: IndexPath) -> MovieCellViewData? {
         guard indexPath.row < moviesRepository.numberOfMovies else { return nil }
-        let movie = moviesRepository.movie(at: indexPath.row)
+        guard let movie = moviesRepository.movie(at: indexPath.row) else { return nil }
 
         let genres = movie.genres?.joined(separator: ", ")
 

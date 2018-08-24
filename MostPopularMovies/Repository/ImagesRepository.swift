@@ -22,7 +22,8 @@ class ImagesRepository {
     private let contentService: ContentServiceProtocol = ContentService()
     private var configuration: Configuration?
 
-    func loadImage(_ relativeURL: String?, width: Int, availableWidths: [String], completion: ((Data?) -> Void)?) {
+    private func loadImage(_ relativeURL: String?, width: Int, availableWidths: [String],
+                           completion: ((Data?) -> Void)?) {
         guard let baseImageURL = configuration?.baseImageURL, let relativeURL = relativeURL else {
             completion?(nil)
             return

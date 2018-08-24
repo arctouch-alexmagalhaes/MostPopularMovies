@@ -11,11 +11,11 @@ import OHHTTPStubs
 import XCTest
 
 // swiftlint:disable file_length
-class ContentServiceTests: XCTestCase {
-    private enum ContentServiceTestsError: Error {
-        case noPathForStub
-    }
+enum ContentServiceTestsError: Error {
+    case noPathForStub
+}
 
+class ContentServiceTests: XCTestCase {
     private let contentService: ContentServiceProtocol = ContentService()
 
     override func setUp() {

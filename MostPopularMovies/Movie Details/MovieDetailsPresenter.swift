@@ -20,8 +20,8 @@ protocol MovieDetailsPresenterProtocol: class {
 
 class MovieDetailsPresenter {
     private weak var view: MovieDetailsViewProtocol?
-    private let moviesRepository: MoviesRepositoryProtocol = MoviesRepository.shared
-    private let imagesRepository: ImagesRepositoryProtocol = ImagesRepository.shared
+    private let moviesRepository: MoviesRepositoryProtocol
+    private let imagesRepository: ImagesRepositoryProtocol
     private let font = UIFont.systemFont(ofSize: 17.0)
     private let sectionTitleColor: UIColor = .magenta
     private let sectionContentColor: UIColor = .mediumCyanBlue
@@ -30,8 +30,12 @@ class MovieDetailsPresenter {
     private lazy var sectionContentAttributes = [NSAttributedStringKey.font: font,
                                                  NSAttributedStringKey.foregroundColor: sectionContentColor]
 
-    init(view: MovieDetailsViewProtocol) {
+    init(view: MovieDetailsViewProtocol,
+         moviesRepository: MoviesRepositoryProtocol = MoviesRepository.shared,
+         imagesRepository: ImagesRepositoryProtocol = ImagesRepository.shared) {
         self.view = view
+        self.moviesRepository = moviesRepository
+        self.imagesRepository = imagesRepository
     }
 
     private func createMovieDetailsViewData(from movie: Movie) -> MovieDetailsViewData {
@@ -145,7 +149,7 @@ extension MovieDetailsPresenter: MovieDetailsPresenterProtocol {
     func movieTitle(at indexPath: IndexPath) -> String? {
         guard indexPath.row < moviesRepository.numberOfMovies else { return nil }
         let movie = moviesRepository.movie(at: indexPath.row)
-        return movie.title
+        return movie?.title
     }
 
     func movieBackdrop(at indexPath: IndexPath, width: CGFloat, completion: ((UIImage?) -> Void)?) {
@@ -154,7 +158,11 @@ extension MovieDetailsPresenter: MovieDetailsPresenterProtocol {
             return
         }
 
-        let movie = moviesRepository.movie(at: indexPath.row)
+        guard let movie = moviesRepository.movie(at: indexPath.row) else {
+            completion?(nil)
+            return
+        }
+
         imagesRepository.loadBackdropImage(movie.backdropImagePath, width: Int(width)) { data in
             guard let data = data else {
                 completion?(nil)
@@ -170,7 +178,11 @@ extension MovieDetailsPresenter: MovieDetailsPresenterProtocol {
             return
         }
 
-        let movie = moviesRepository.movie(at: indexPath.row)
+        guard let movie = moviesRepository.movie(at: indexPath.row) else {
+            completion?(nil)
+            return
+        }
+
         imagesRepository.loadPosterImage(movie.posterImagePath, width: Int(width)) { data in
             guard let data = data else {
                 completion?(nil)
@@ -182,7 +194,7 @@ extension MovieDetailsPresenter: MovieDetailsPresenterProtocol {
 
     func movieDetails(at indexPath: IndexPath, completion: ((MovieDetailsViewData?) -> Void)?) {
         guard indexPath.row < moviesRepository.numberOfMovies,
-            let movieID = moviesRepository.movie(at: indexPath.row).id else {
+            let movieID = moviesRepository.movie(at: indexPath.row)?.id else {
                 completion?(nil)
                 return
         }
@@ -201,7 +213,7 @@ extension MovieDetailsPresenter: MovieDetailsPresenterProtocol {
     func didTapWebsite(at indexPath: IndexPath) {
         guard indexPath.row < moviesRepository.numberOfMovies else { return }
         let movie = moviesRepository.movie(at: indexPath.row)
-        guard let websitePath = movie.websitePath, let websiteURL = URL(string: websitePath) else { return }
+        guard let websitePath = movie?.websitePath, let websiteURL = URL(string: websitePath) else { return }
         let viewController = SFSafariViewController(url: websiteURL)
         view?.present(viewController, animated: true, completion: nil)
     }

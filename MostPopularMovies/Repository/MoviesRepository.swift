@@ -18,7 +18,7 @@ protocol MoviesRepositoryProtocol: class {
     var delegate: MoviesRepositoryDelegate? { get set }
     var numberOfMovies: Int { get }
 
-    func movie(at index: Int) -> Movie
+    func movie(at index: Int) -> Movie?
     func loadMovies()
     func refreshMovies()
     func searchForMovies(searchQuery: String)
@@ -133,6 +133,16 @@ class MoviesRepository {
         }
 
         let dictionary = movieDictionary ?? [:]
+        let newMovie = createMovie(from: dictionary, existingMovie: movie)
+
+        if let movieIndex = loadedMovies.index(where: { $0.id == existingID }) {
+            loadedMovies[movieIndex] = newMovie
+        }
+        return newMovie
+    }
+
+    private func createMovie(from dictionary: [AnyHashable: Any],
+                             existingMovie movie: Movie?) -> Movie {
         var genres: [String]?
         if let genreObjects = dictionary["genres"] as? [[AnyHashable: Any]] {
             genres = genreObjects.compactMap { $0["name"] as? String }
@@ -183,11 +193,12 @@ extension MoviesRepository: MoviesRepositoryProtocol {
         return loadedMovies.count
     }
 
-    func movie(at index: Int) -> Movie {
+    func movie(at index: Int) -> Movie? {
         if index + 10 > loadedMovies.count && index < totalNumberOfMovies {
             loadMovies()
         }
 
+        guard index >= 0 && index < loadedMovies.count else { return nil }
         return loadedMovies[index]
     }
 
@@ -240,6 +251,10 @@ extension MoviesRepository: MoviesRepositoryProtocol {
 
             let movie: Movie? = self?.parseMovie(dictionary: movieDictionary, existingID: id)
             DispatchQueue.main.async {
+                guard movie?.id == id else {
+                    completion?(nil)
+                    return
+                }
                 completion?(movie)
             }
         }
